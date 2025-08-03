@@ -1,9 +1,8 @@
 {
   "version": 2,
-  "functions": {
-    "api/*.ts": {
-      "runtime": "vercel-node@canary"
-    }
+  "routes": [
+    { "src": "/api/(.*)", "dest": "/api/$1.ts" }
+  ]
   },
   "routes": [
     { "src": "/api/(.*)", "dest": "/api/$1.ts" }
