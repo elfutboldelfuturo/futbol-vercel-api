@@ -2,8 +2,7 @@
   "version": 2,
   "functions": {
     "api/*.ts": {
-      "runtime": "@vercel/node@2.16.1"
-
+      "runtime": "vercel-node@canary"
     }
   },
   "routes": [
