@@ -28,7 +28,7 @@ export default async function handler(req, res) {
   const { error: insertError } = await supabase.from('usuarios').insert({
     id: user.user.id,
     correo,
-    nombre: nombre || '', // si no lo pasas, queda en blanco
+    nombre: nombre || '',
     rol_principal: rol,
     roles: [rol],
     creado_en: new Date().toISOString(),
