@@ -1,42 +1,36 @@
-import { createClient } from '@supabase/supabase-js';
+// pages/api/create-user.ts
+
+const { createClient } = require('@supabase/supabase-js');
 
 const supabase = createClient(
-  process.env.SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
-export default async function handler(req, res) {
+module.exports = async (req, res) => {
   if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
+    return res.status(405).json({ error: 'Método no permitido' });
   }
 
-  const { correo, password, rol, nombre } = req.body;
+  const { correo, password, rol } = req.body;
 
   if (!correo || !password || !rol) {
-    return res.status(400).json({ error: 'Faltan campos requeridos' });
+    return res.status(400).json({ error: 'Faltan campos obligatorios' });
   }
 
-  const { data: user, error } = await supabase.auth.admin.createUser({
-    email: correo,
-    password,
-  });
+  try {
+    const { data, error } = await supabase.auth.admin.createUser({
+      email: correo,
+      password: password,
+      email_confirm: true,
+    });
 
-  if (error || !user?.user?.id) {
-    return res.status(500).json({ error: error?.message || 'Error al crear usuario en auth' });
+    if (error) {
+      return res.status(500).json({ error: error.message });
+    }
+
+    return res.status(200).json({ mensaje: 'Usuario creado', data });
+  } catch (err) {
+    return res.status(500).json({ error: 'Error inesperado al crear usuario' });
   }
-
-  const { error: insertError } = await supabase.from('usuarios').insert({
-    id: user.user.id,
-    correo,
-    nombre: nombre || '',
-    rol_principal: rol,
-    roles: [rol],
-    creado_en: new Date().toISOString(),
-  });
-
-  if (insertError) {
-    return res.status(500).json({ error: insertError.message });
-  }
-
-  return res.status(200).json({ mensaje: '✅ Usuario creado correctamente' });
-}
+};
