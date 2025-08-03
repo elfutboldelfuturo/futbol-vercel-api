@@ -1,13 +1,12 @@
-// pages/api/create-user.ts
-
-const { createClient } = require('@supabase/supabase-js');
+import { createClient } from '@supabase/supabase-js';
+import type { NextApiRequest, NextApiResponse } from 'next';
 
 const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
+  process.env.SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
-module.exports = async (req, res) => {
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Método no permitido' });
   }
@@ -21,16 +20,15 @@ module.exports = async (req, res) => {
   try {
     const { data, error } = await supabase.auth.admin.createUser({
       email: correo,
-      password: password,
-      email_confirm: true,
+      password,
     });
 
     if (error) {
       return res.status(500).json({ error: error.message });
     }
 
-    return res.status(200).json({ mensaje: 'Usuario creado', data });
-  } catch (err) {
-    return res.status(500).json({ error: 'Error inesperado al crear usuario' });
+    return res.status(200).json({ message: '✅ Usuario creado correctamente', data });
+  } catch (err: any) {
+    return res.status(500).json({ error: 'Error en el servidor: ' + err.message });
   }
-};
+}
