@@ -7,42 +7,36 @@ const supabase = createClient(
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Método no permitido' });
+    return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { correo, password, rol } = req.body;
+  const { correo, password, rol, nombre } = req.body;
 
   if (!correo || !password || !rol) {
-    return res.status(400).json({ error: 'Faltan campos obligatorios' });
+    return res.status(400).json({ error: 'Faltan campos requeridos' });
   }
 
-  try {
-    const { data: user, error } = await supabase.auth.admin.createUser({
-      email: correo,
-      password,
-    });
+  const { data: user, error } = await supabase.auth.admin.createUser({
+    email: correo,
+    password,
+  });
 
-    if (error || !user?.user?.id) {
-      return res.status(500).json({ error: error?.message || 'Error al crear el usuario' });
-    }
-
-    const { error: insertError } = await supabase.from('usuarios').insert({
-      id: user.user.id,
-      correo,
-      nombre: '',
-      rol_principal: rol,
-      roles: [rol],
-      equipo_id: null,
-      categoria_id: null,
-      creado_en: new Date().toISOString(),
-    });
-
-    if (insertError) {
-      return res.status(500).json({ error: insertError.message });
-    }
-
-    return res.status(200).json({ message: 'Usuario creado correctamente' });
-  } catch (err) {
-    return res.status(500).json({ error: 'Error inesperado' });
+  if (error || !user?.user?.id) {
+    return res.status(500).json({ error: error?.message || 'Error al crear usuario en auth' });
   }
+
+  const { error: insertError } = await supabase.from('usuarios').insert({
+    id: user.user.id,
+    correo,
+    nombre: nombre || '', // si no lo pasas, queda en blanco
+    rol_principal: rol,
+    roles: [rol],
+    creado_en: new Date().toISOString(),
+  });
+
+  if (insertError) {
+    return res.status(500).json({ error: insertError.message });
+  }
+
+  return res.status(200).json({ mensaje: '✅ Usuario creado correctamente' });
 }
